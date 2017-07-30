@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>移动的小球</title>
+</head>
+
+<body>
+  <canvas id="canvas" width="400" height="100"></canvas>
+</body>
+<script>
+  // 创建画球函数
+  function Ball() {
+    this.x = 0;
+    this.y = 0;
+    this.radius = 10;
+    this.fillStyle = "#f85455";
+    this.draw = function(cxt) {
+      cxt.fillStyle = this.fillStyle; //填充颜色
+      cxt.beginPath(); //开始一条路径
+      cxt.arc(this.x, this.y, this.radius, 0, 2 * Math.PI, true); //创建圆形
+      cxt.closePath(); //设置曲线闭合
+      cxt.fill(); //填充绘图
+    }
+  }
+
+  // requestAnimationFrame的兼容性写法，这个函数方法作用和settimeout或者setinterval类似，
+  //不过他是浏览器专门针对动画提供的api，效果肯定比前两个好，节省资源。
+  window.requestAnimFrame = (function() {
+    return window.requestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.oRequestAnimationFrame ||
+      window.msRequestAnimationFrame ||
+      function(callback) {
+        window.setTimeout(callback, 1000 / 60);
+      };
+  })();
+
+  window.cancelAnimationFrame = (function() {
+    return window.cancelAnimationFrame ||
+      window.webkitCancelAnimationFrame ||
+      window.mozCancelAnimationFrame ||
+      window.oCancelAnimationFrame ||
+      function(timer) {
+        window.clearTimeout(timer);
+      };
+  })();
+
+  // 获得当前鼠标位置
+  function getMouse(ev) {
+    var mouse = {
+      x: 0,
+      y: 0
+    };
+    var event = ev || window.event;
+    if (event.pageX || event.pageY) {
+      x = event.x;
+      y = event.y;
+    } else {
+      var scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft;
+      var scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      x = event.clientX + scrollLeft;
+      y = event.clientY + scrollTop;
+    }
+    mouse.x = x;
+    mouse.y = y;
+
+    return mouse;
+  }
+
+
+  var canvas = document.getElementById("canvas"),
+    context = canvas.getContext("2d"),
+    ball = new Ball(), //初始化小球
+    easing = 0.05, //设置运动比例系数
+    targetX = canvas.width - 10, //目标位置的x坐标
+    targetY = canvas.height / 2; //目标位置的Y坐标
+  ball.x = 5; //开始x坐标
+  ball.y = 5; //开始y坐标
+
+  canvas.addEventListener("mousemove", function(ev) {
+    mouse = getMouse(ev);
+    targetX = mouse.x;
+    targetY = mouse.y;
+  }, false);
+
+  // 缓动动画函数
+  var animRequest = null;
+  (function drawFrame() {
+    console.log(1)
+    animRequest = window.requestAnimationFrame(drawFrame, canvas);
+    context.clearRect(0, 0, canvas.width, canvas.height); //清空指定矩形内的一个矩形
+    var vx = (targetX - ball.x) * easing; //移动的位置X
+    var vy = (targetY - ball.y) * easing; //移动的位置y
+
+    ball.x += vx;
+    ball.y += vy;
+    ball.draw(context); //重新绘制圆形
+  })();
+</script>
+
+</html>
